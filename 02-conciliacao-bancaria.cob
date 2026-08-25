@@ -1,0 +1,61 @@
+>>SOURCE FORMAT FREE
+IDENTIFICATION DIVISION.
+PROGRAM-ID. CONCILIACAO-BANCARIA.
+
+DATA DIVISION.
+WORKING-STORAGE SECTION.
+01 WS-SISTEMA.
+   05 WS-REG-SISTEMA OCCURS 3 TIMES.
+      10 WSS-ID           PIC 9(5).
+      10 WSS-VALOR        PIC 9(7)V99.
+01 WS-BANCO.
+   05 WS-REG-BANCO OCCURS 3 TIMES.
+      10 WSB-ID           PIC 9(5).
+      10 WSB-VALOR        PIC 9(7)V99.
+01 WS-I                   PIC 9 VALUE ZERO.
+01 WS-J                   PIC 9 VALUE ZERO.
+01 WS-ENCONTROU           PIC X VALUE "N".
+01 WS-CONCILIADOS         PIC 9 VALUE ZERO.
+01 WS-DIVERGENTES         PIC 9 VALUE ZERO.
+
+PROCEDURE DIVISION.
+    *> Dados simulam lançamentos do ERP e do extrato bancário.
+    MOVE 10001 TO WSS-ID(1)
+    MOVE 500.00 TO WSS-VALOR(1)
+    MOVE 10002 TO WSS-ID(2)
+    MOVE 750.00 TO WSS-VALOR(2)
+    MOVE 10003 TO WSS-ID(3)
+    MOVE 320.00 TO WSS-VALOR(3)
+
+    MOVE 10001 TO WSB-ID(1)
+    MOVE 500.00 TO WSB-VALOR(1)
+    MOVE 10002 TO WSB-ID(2)
+    MOVE 700.00 TO WSB-VALOR(2)
+    MOVE 10004 TO WSB-ID(3)
+    MOVE 150.00 TO WSB-VALOR(3)
+
+    DISPLAY "CONCILIACAO BANCARIA"
+    PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I > 3
+        MOVE "N" TO WS-ENCONTROU
+        PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J > 3
+            IF WSS-ID(WS-I) = WSB-ID(WS-J)
+                MOVE "S" TO WS-ENCONTROU
+                IF WSS-VALOR(WS-I) = WSB-VALOR(WS-J)
+                    ADD 1 TO WS-CONCILIADOS
+                    DISPLAY "OK: lancamento " WSS-ID(WS-I)
+                ELSE
+                    ADD 1 TO WS-DIVERGENTES
+                    DISPLAY "DIVERGENCIA: " WSS-ID(WS-I)
+                    DISPLAY "  Sistema: " WSS-VALOR(WS-I) " Banco: " WSB-VALOR(WS-J)
+                END-IF
+            END-IF
+        END-PERFORM
+        IF WS-ENCONTROU = "N"
+            ADD 1 TO WS-DIVERGENTES
+            DISPLAY "AUSENTE NO BANCO: " WSS-ID(WS-I)
+        END-IF
+    END-PERFORM
+
+    DISPLAY "Conciliados: " WS-CONCILIADOS
+    DISPLAY "Com divergencia: " WS-DIVERGENTES
+    GOBACK.
